@@ -16,8 +16,8 @@ return new class extends Migration
             $table->string('name')->nullable(); // Supplier's name
             $table->string('email')->unique(); // Email (unique)
             $table->string('phone')->nullable(); // Supplier's phone (optional)
-            $table->string(column: 'adress')->nullable(); // Supplier's phone (optional)
-            $table->string('compteVerified')->nullable(); // Supplier's phone (optional)
+            $table->string('adress')->nullable(); 
+            $table->string('compteVerified')->nullable(); 
             $table->string('password'); // Password
             $table->enum('role', ['supplier', 'admin']); // Role field
             $table->timestamps(); // Timestamps
