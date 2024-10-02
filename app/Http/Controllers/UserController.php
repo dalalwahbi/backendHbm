@@ -41,6 +41,7 @@ class UserController extends Controller
 
         // Log the registration event
         Log::info('User registered successfully', ['user_id' => $user->id]);
+        $user->sendEmailVerificationNotification();
 
         // Return success response
         return response()->json(['message' => 'User registered successfully', 'user' => $user], 201);
