@@ -57,17 +57,18 @@ class UserController extends Controller
 }
 
 // Function to generate custom ID
-private function generateCustomId($name)
-{
+    private function generateCustomId($name)
+    {
     // Extract the first name and convert it to lowercase
     $firstName = strtolower(explode(' ', $name)[0]); // Get the first name
     $userId = 'hbm' . $firstName . Str::random(5); // Generate a random string of 5 characters
 
     return $userId;
-}
-    // Login supplier or admin
+    }
+
+ // Login supplier or admin
     public function login(Request $request)
-{
+    {
     try {
         // Validate the request
         $credentials = $request->validate([
