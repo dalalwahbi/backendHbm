@@ -8,53 +8,70 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
-
-
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\CustomEmail; // Make sure this is imported
 class UserController extends Controller
 {
     public function register(Request $request)
-{
-    try {
-        // Validate the incoming request data
-        $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-            'phone' => 'nullable|string|max:20', // Allow phone to be nullable
-            'address' => 'nullable|string|max:255', // Allow address to be nullable
-        ]);
-
-        // Generate a custom ID
-        $customId = $this->generateCustomId($validatedData['name']);
-
-        // Create a new user with validated data
-        $user = User::create([
-            'name' => $validatedData['name'],
-            'email' => $validatedData['email'],
-            'password' => Hash::make($validatedData['password']), // Hash the password
-            'role' => 'supplier', // Assign default role
-            'compteVerified' => 'yes', // Set account verification status
-            'custom_id' => $customId, // Assign the custom ID
-            'phone' => $validatedData['phone'], // Assign phone (can be null)
-            'address' => $validatedData['address'], // Assign address (can be null)
-        ]);
-
-        // Log the registration event
-        Log::info('User registered successfully', ['user_id' => $user->id]);
-        $user->sendEmailVerificationNotification();
-
-        // Return success response
-        return response()->json(['message' => 'User registered successfully', 'user' => $user], 201);
-
-    } catch (ValidationException $e) {
-        // Handle validation exception
-        return response()->json(['message' => $e->getMessage()], 422);
-    } catch (\Exception $e) {
-        // Log any other errors
-        Log::error('Registration error', ['error' => $e->getMessage()]);
-        return response()->json(['message' => 'An error occurred during registration. Please try again.'], 500);
+    {
+        try {
+            // Validate the incoming request data
+            $validatedData = $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255|unique:users',
+                'password' => 'required|string|min:8', // Don't require confirmation here
+                'phone' => 'nullable|string|max:20',
+                'address' => 'nullable|string|max:255',
+            ]);
+    
+       
+    
+            // Generate a custom ID
+            $customId = $this->generateCustomId($validatedData['name']);
+    
+            // Create a new user with validated data
+            $user = User::create([
+                'name' => $validatedData['name'],
+                'email' => $validatedData['email'],
+                'password' => Hash::make($validatedData['password']), // Hash the password
+                'role' => 'supplier', 
+                'compteVerified' => 'yes', 
+                'custom_id' => $customId, 
+                'phone' => $validatedData['phone'], 
+                'address' => $validatedData['address'],
+            ]);
+    
+            // Generate the verification URL with the correct hash
+            $verificationUrl = URL::temporarySignedRoute(
+                'verification.verify',
+                now()->addMinutes(60),
+                ['id' => $user->id, 'hash' => sha1($user->email)]
+            );
+    
+            // Send custom email with verification link
+            Mail::to($user->email)->send(new CustomEmail($user, $verificationUrl));
+    
+            // Return success response
+            return response()->json(['message' => 'User registered successfully', 'user' => $user], 201);
+    
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'Validation error. Please check your input.',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'An error occurred during registration. Please try again.',
+                'error' => $e->getMessage(),
+                'stack' => $e->getTraceAsString(),
+            ], 500);
+        }
     }
-}
+    
+    
+
+    
 
 // Function to generate custom ID
     private function generateCustomId($name)

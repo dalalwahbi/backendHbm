@@ -1,14 +1,16 @@
-<x-mail::message>
-<img src="{{ asset('images/logo.png') }}" alt="Hbmdigital Logo" style="width: 100px;">
+@component('mail::message')
+# Hello {{ $userName }},
 
-# Hello, {{ $userName }}!
+Your account has been successfully verified!
 
-Thank you for registering with **Hbmdigital**. We are excited to have you as part of our community.
+Your custom ID is: **{{ $customId }}**
 
-<x-mail::button :url="'https://hbmdigital.com/verify?email=' . $userName">
-Verify Email
-</x-mail::button>
+Thank you for joining us!
+
+@component('mail::button', ['url' => $verificationUrl])
+Verify Your Account
+@endcomponent
 
 Thanks,<br>
 {{ config('app.name') }}
-</x-mail::message>
+@endcomponent
