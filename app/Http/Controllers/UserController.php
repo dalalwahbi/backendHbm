@@ -128,4 +128,29 @@ class UserController extends Controller
         $request->user()->tokens()->delete();
         return response()->json(['message' => 'Logged out successfully']);
     }
+    // Function to return all users with role 'supplier'
+    public function getSuppliers()
+        {
+            // Fetch all users where the role is 'supplier'
+            $suppliers = User::where('role', 'supplier')->get();
+    
+            // Return the list of suppliers in JSON format
+            return response()->json($suppliers);
+        }
+        
+      // Function to get details of a specific supplier by ID
+      public function getSupplierDetails($id)
+      {
+          // Fetch the supplier where the role is 'supplier' and the ID matches
+          $supplier = User::where('role', 'supplier')->find($id);
+  
+          // Check if supplier exists
+          if ($supplier) {
+              // Return supplier details in JSON format
+              return response()->json($supplier);
+          } else {
+              // If supplier not found, return an error message
+              return response()->json(['error' => 'Supplier not found'], 404);
+          }
+      }
 }

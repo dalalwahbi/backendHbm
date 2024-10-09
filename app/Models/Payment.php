@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class Payment extends Model
 {
     use HasFactory;
+    protected $primaryKey = 'PaymentID'; // Use the name of your primary key column
+
     protected $fillable = [
         'OrderID',
         'PaymentStatus',

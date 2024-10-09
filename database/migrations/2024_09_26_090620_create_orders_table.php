@@ -17,7 +17,6 @@ return new class extends Migration
             $table->unsignedBigInteger('CustomerID'); // Use unsignedBigInteger for consistency with CustomerID reference
             $table->string('Status'); // Order Status
             $table->timestamps();
-        
             // Foreign key constraint for CustomerID
             $table->foreign('CustomerID')->references('CustomerID')->on('customer_infos')->onDelete('cascade');
         });

@@ -8,12 +8,19 @@ use Illuminate\Database\Eloquent\Model;
 class Order extends Model
 {
     use HasFactory;
+    protected $primaryKey = 'OrderID'; // Define custom primary key
+
     protected $fillable = [
         'SupplierID',
         'PaymentID',
         'CustomerID',
         'Status',
     ];
+
+    public function orderTracking()
+    {
+        return $this->hasMany(OrderTracking::class, 'OrderID');
+    }
     public function orderItems()
     {
         return $this->hasMany(OrderItem::class, 'OrderID');
@@ -34,8 +41,5 @@ class Order extends Model
         return $this->hasOne(Payment::class, 'OrderID');
     }
 
-    public function orderTracking()
-    {
-        return $this->hasMany(OrderTracking::class, 'OrderID');
-    }
+
 }

@@ -9,6 +9,8 @@ class CustomerInfo extends Model
 {
 
     use HasFactory;
+    protected $primaryKey = 'CustomerID'; // Custom primary key
+
     protected $fillable = [
         'Name',
         'SupplierID',
