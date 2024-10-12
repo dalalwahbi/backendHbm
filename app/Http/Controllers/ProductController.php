@@ -12,7 +12,7 @@ class ProductController extends Controller
     public function allProducts()
     {
         // Fetch all products, only selecting 'Name' and 'Price'
-        $products = Product::select('ProductID', 'Name', 'Price')->get();
+        $products = Product::select('ProductID', 'Name', 'description','Price')->get();
 
         // Return the products as a JSON response (or view if using Blade)
         return response()->json($products);

@@ -12,6 +12,8 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CustomerInfoController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\OrderTrackingController;
+
 
 
 
@@ -78,3 +80,7 @@ Route::middleware('auth:sanctum')->delete('/orders/{orderId}', [OrderController:
 
 //update payement status 
 Route::put('/orders/{orderId}/payment-status', [PaymentController::class, 'updatePaymentStatus']);
+//Updating Order Tracking
+Route::put('/orders/{orderId}/tracking', [OrderTrackingController::class, 'updateTracking']);
+//get tarcking status for an orderId given
+Route::get('/orders/{orderId}/tracking-status', [OrderTrackingController::class, 'getOrderTrackingStatus']);

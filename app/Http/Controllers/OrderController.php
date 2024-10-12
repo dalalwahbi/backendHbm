@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\Payment;
+use App\Models\OrderTracking;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -59,18 +60,17 @@ class OrderController extends Controller
                 'Status' => 'en attente', // Initial order status
             ]);
     
-           // Create the payment and link it to the order
+            // Create the payment and link it to the order
             $payment = Payment::create([
-            'OrderID' => $order->OrderID,
-            'PaymentStatus' => 'en attente',
-            'PaymentMethod' => 'not specified',
-            'Amount' => $totalAmount,
+                'OrderID' => $order->OrderID,
+                'PaymentStatus' => 'en attente',
+                'PaymentMethod' => 'not specified',
+                'Amount' => $totalAmount,
             ]);
-
+    
             // Assign PaymentID to the order
             $order->PaymentID = $payment->PaymentID; // Assign the PaymentID to the order
             $order->save(); // Save the changes to the order
-
     
             // Step 3: Create order items and decrement product stock
             foreach ($request->product_ids as $index => $productId) {
@@ -88,6 +88,13 @@ class OrderController extends Controller
                 $product->StockQuantity -= $request->quantities[$index];
                 $product->save();
             }
+    
+            // Create initial order tracking entry
+            OrderTracking::create([
+                'OrderID' => $order->OrderID,
+                'CurrentStatus' => 'en attente', // Initial tracking status
+                'StatusDate' => now(), // Current timestamp
+            ]);
     
             // Commit the transaction
             DB::commit();
@@ -109,6 +116,7 @@ class OrderController extends Controller
             return response()->json(['error' => 'Order creation failed: ' . $e->getMessage()], 500);
         }
     }
+    
     
     
     
