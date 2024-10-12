@@ -46,6 +46,8 @@ Route::get('/products', [ProductController::class, 'allProducts']); // To get al
 Route::get('/products/{id}', [ProductController::class, 'showProduct']); // To get a single product by ID
 Route::post('/products', [ProductController::class, 'createProduct']); // To create a new product
 Route::post('/products/{id}/add-to-cart', [ProductController::class, 'addToCart']);
+Route::get('/cosmetique', [ProductController::class, 'getCosmetiqueProducts']);
+Route::get('/Produit-alimentaire', [ProductController::class, 'getCosmetiqueProduitsAlimentaire']);
 
 //create a customer
 Route::middleware('auth:sanctum')->post('/customers', [CustomerInfoController::class, 'createCustomer']);

@@ -9,15 +9,53 @@ use Illuminate\Support\Facades\Validator; // Import this at the top with other i
 class ProductController extends Controller
 {
     // Function to display all products
-    public function allProducts()
+    public function allProducts(Request $request)
     {
-        // Fetch all products, only selecting 'Name' and 'Price'
-        $products = Product::select('ProductID', 'Name', 'description','Price')->get();
-
-        // Return the products as a JSON response (or view if using Blade)
-        return response()->json($products);
+        try {
+            // Fetch all products, only selecting specific fields
+            $products = Product::select('ProductID', 'Name', 'description', 'Price', 'image','Category')->get();
+    
+            // Return the products as a JSON response with a 200 status code
+            return response()->json($products, 200);
+        } catch (\Exception $e) {
+            // Log the error for debugging purposes
+            Log::error('Failed to fetch products: ' . $e->getMessage());
+    
+            // Return a JSON response with an error message and a 500 status code
+            return response()->json(['error' => 'Failed to fetch products'], 500);
+        }
+    }
+    // Function to get products Cosmétique
+    public function getCosmetiqueProducts()
+    {
+        // Log the query
+        \Log::info('Fetching products for category: Cosmétique');
+    
+        // Fetch products
+        $cosmetiqueProducts = Product::where('Category', 'Cosmétique')->get();
+    
+        // Check if products were found
+        if ($cosmetiqueProducts->isEmpty()) {
+            \Log::info('No products found for category: Cosmétique');
+            return response()->json(['message' => 'Product not found'], 404);
+        }
+    
+        // Log the found products
+        \Log::info('Found products:', $cosmetiqueProducts->toArray());
+    
+        return response()->json($cosmetiqueProducts);
     }
 
+    
+        // Function to get products Produit alimentaire
+        public function getCosmetiqueProduitsAlimentaire()
+        {
+            // Fetch products with the category "Cosmétique"
+            $cosmetiqueProducts = Product::where('Category', 'Produit alimentaire')->get();
+    
+            // Return a response (can be JSON, view, etc.)
+            return response()->json($cosmetiqueProducts);
+        }
     // Function to display a single product by its ID
     public function showProduct($id)
     {
@@ -33,37 +71,47 @@ class ProductController extends Controller
         return response()->json($product);
     }
 
-    // Function to create a new product
-    public function createProduct(Request $request)
-    {
-        // Validate the incoming request data
-        $validator = Validator::make($request->all(), [
-            'Name' => 'required|string|max:255',
-            'Description' => 'nullable|string',
-            'Price' => 'required|numeric|min:0',
-            'StockQuantity' => 'required|integer|min:0',
-            'Category' => 'required|string|max:255',
-        ]);
+// Function to create a new product
+public function createProduct(Request $request)
+{
+    // Validate the incoming request data
+    $validator = Validator::make($request->all(), [
+        'Name' => 'required|string|max:255',
+        'Description' => 'nullable|string',
+        'Price' => 'required|numeric|min:0',
+        'StockQuantity' => 'required|integer|min:0',
+        'Category' => 'required|string|max:255',
+        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Image validation rules
+    ]);
 
-        // If validation fails, return a 422 response with the validation errors
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
-        }
-
-        // Create a new product instance and fill it with the validated data
-        $product = new Product();
-        $product->Name = $request->input('Name');
-        $product->Description = $request->input('Description');
-        $product->Price = $request->input('Price');
-        $product->StockQuantity = $request->input('StockQuantity');
-        $product->Category = $request->input('Category');
-
-        // Save the product to the database
-        $product->save();
-
-        // Return a success response
-        return response()->json(['message' => 'Product created successfully!', 'product' => $product], 201);
+    // If validation fails, return a 422 response with the validation errors
+    if ($validator->fails()) {
+        return response()->json($validator->errors(), 422);
     }
+
+    // Handle image upload if an image is provided
+    $imagePath = null;
+    if ($request->hasFile('image')) {
+        // Store the image in the 'public/products' directory and save the path
+        $imagePath = $request->file('image')->store('products', 'public');
+    }
+
+    // Create a new product instance and fill it with the validated data
+    $product = new Product();
+    $product->Name = $request->input('Name');
+    $product->Description = $request->input('Description');
+    $product->Price = $request->input('Price');
+    $product->StockQuantity = $request->input('StockQuantity');
+    $product->Category = $request->input('Category');
+    $product->image = $imagePath; // Store the image path
+
+    // Save the product to the database
+    $product->save();
+
+    // Return a success response
+    return response()->json(['message' => 'Product created successfully!', 'product' => $product], 201);
+}
+
 
     //function addToCart
     public function addToCart(Request $request, $id)
