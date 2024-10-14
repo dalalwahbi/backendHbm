@@ -48,9 +48,11 @@ Route::post('/products', [ProductController::class, 'createProduct']); // To cre
 Route::post('/products/{id}/add-to-cart', [ProductController::class, 'addToCart']);
 Route::get('/cosmetique', [ProductController::class, 'getCosmetiqueProducts']);
 Route::get('/Produit-alimentaire', [ProductController::class, 'getCosmetiqueProduitsAlimentaire']);
+Route::get('/same-category-products/{id}', [ProductController::class, 'getProductsByCategory']);
 
 //create a customer
 Route::middleware('auth:sanctum')->post('/customers', [CustomerInfoController::class, 'createCustomer']);
+// Route::post('/customers', [CustomerInfoController::class, 'createCustomer']);
 
 //CREATE ORDER 
 Route::middleware('auth:sanctum')->post('/orders/create', [OrderController::class, 'createOrder']);

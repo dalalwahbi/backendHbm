@@ -47,15 +47,15 @@ class ProductController extends Controller
     }
 
     
-        // Function to get products Produit alimentaire
-        public function getCosmetiqueProduitsAlimentaire()
-        {
+    // Function to get products Produit alimentaire
+    public function getCosmetiqueProduitsAlimentaire()
+    {
             // Fetch products with the category "Cosmétique"
             $cosmetiqueProducts = Product::where('Category', 'Produit alimentaire')->get();
     
             // Return a response (can be JSON, view, etc.)
             return response()->json($cosmetiqueProducts);
-        }
+    }
     // Function to display a single product by its ID
     public function showProduct($id)
     {
@@ -185,5 +185,36 @@ public function createProduct(Request $request)
              return response()->json(['error' => 'Product not found'], 404);
          }
      }
+     public function getProductsByCategory($productId)
+     {
+         // Retrieve the product by ID
+         $product = Product::find($productId);
+     
+         // Check if the product exists
+         if (!$product) {
+             return response()->json([
+                 'message' => 'Product not found',
+             ], 404);
+         }
+     
+         // Fetch products in the same category
+         $sameCategoryProducts = Product::where('Category', $product->Category)
+                                        ->where('ProductID', '!=', $product->ProductID) // Exclude the current product
+                                        ->get();
+     
+         // Check if there are products in the same category
+         if ($sameCategoryProducts->isEmpty()) {
+             return response()->json([
+                 'message' => 'No products found in the same category',
+             ], 404);
+         }
+     
+         // Return the products in the same category
+         return response()->json([
+             'category' => $product->Category, // Assuming the product belongs to a category
+             'products' => $sameCategoryProducts,
+         ], 200);
+     }
 }
 
+     

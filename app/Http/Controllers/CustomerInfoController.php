@@ -11,36 +11,56 @@ class CustomerInfoController extends Controller
     // Method to create a new customer
     public function createCustomer(Request $request)
     {
-        // Validate the input
-        $validator = Validator::make($request->all(), [
-            'Name' => 'required|string|max:255',
-            'Email' => 'required|email|unique:customer_infos,Email',
-            'Phone' => 'nullable|string|max:20',
-            'Address' => 'required|string|max:255',
-            'City' => 'required|string|max:255',
-        ]);
-
-        // If validation fails, return error message
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+        try {
+            // Validate the input
+            $validator = Validator::make($request->all(), [
+                'Name' => 'required|string|max:255',
+                'Email' => 'required|email|unique:customer_infos,Email',
+                'Phone' => 'nullable|string|max:20',
+                'Address' => 'required|string|max:255',
+                'City' => 'required|string|max:255',
+            ]);
+    
+            // If validation fails, return error message
+            if ($validator->fails()) {
+                return response()->json([
+                    'message' => 'Validation error',
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+    
+            // Create the customer
+            $customer = CustomerInfo::create([
+                'SupplierID' => auth()->user()->id, // Assuming the supplier is the logged-in user
+                'Name' => $request->input('Name'),
+                'Email' => $request->input('Email'),
+                'Phone' => $request->input('Phone'),
+                'Address' => $request->input('Address'),
+                'City' => $request->input('City'),
+            ]);
+    
+            // Return success message with the newly created customer details
+            return response()->json([
+                'message' => 'Customer created successfully!',
+                'customer' => $customer,
+            ], 201);
+    
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Catch any database-related errors
+            return response()->json([
+                'message' => 'Database error',
+                'error' => $e->getMessage(),
+            ], 500);
+    
+        } catch (\Exception $e) {
+            // Catch any other general errors
+            return response()->json([
+                'message' => 'An error occurred while creating the customer',
+                'error' => $e->getMessage(),
+            ], 500);
         }
-
-        // Create the customer
-        $customer = CustomerInfo::create([
-            'SupplierID' => auth()->user()->id, // Assuming the supplier is the logged-in user
-            'Name' => $request->input('Name'),
-            'Email' => $request->input('Email'),
-            'Phone' => $request->input('Phone'),
-            'Address' => $request->input('Address'),
-            'City' => $request->input('City'),
-        ]);
-
-        // Return success message with the newly created customer details
-        return response()->json([
-            'message' => 'Customer created successfully!',
-            'customer' => $customer,
-        ], 201);
     }
+    
     // Function to get details of a specific customer by ID
     public function getCustomerDetails($id)
     {
