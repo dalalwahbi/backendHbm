@@ -117,17 +117,40 @@ class OrderController extends Controller
         }
     }
     
-    
-    
-    
-
-
     // Get all orders for a supplier
     public function getOrders()
     {
         $orders = Order::where('SupplierID', Auth::id())->with('orderItems.product')->get();
         return response()->json($orders);
     }
+    public function getOrdersAdmin()
+    {
+        $orders = Order::where('SupplierID', Auth::id())
+            ->with(['orderItems.product', 'payment']) // Add 'payment' relationship
+            ->get()
+            ->map(function ($order) {
+                // Get product names
+                $productNames = $order->orderItems->map(function ($item) {
+                    return $item->product->Name; // Assuming 'ProductName' is the field in 'Product'
+                });
+    
+                // Get the total for the order using the calculateOrderTotal function
+                $total = $this->calculateOrderTotal($order->OrderID);
+    
+                return [
+                    'orderId' => $order->OrderID,
+                    'productNames' => $productNames,
+                    'status' => $order->status,
+                    'paymentStatus' => $order->payment->PaymentStatus, // Access PaymentStatus from the 'payments' table
+                    'total' => $total,
+                ];
+            });
+    
+        return response()->json($orders);
+    }
+    
+    
+    
 
     // Get details for a specific order
     public function getOrder($orderId)
@@ -142,21 +165,22 @@ class OrderController extends Controller
     // Function to calculate the total sum of products in an order
     public function calculateOrderTotal($orderId)
     {
-            // Retrieve the order by OrderID with its related order items
-            $order = Order::with('orderItems')->find($orderId);
+        // Retrieve the order by OrderID with its related order items
+        $order = Order::with('orderItems')->find($orderId);
     
-            if (!$order) {
-                return response()->json(['error' => 'Order not found'], 404);
-            }
+        if (!$order) {
+            return null; // Return null if order not found
+        }
     
-            // Calculate the total sum
-            $total = $order->orderItems->sum(function ($item) {
-                return $item->Price * $item->Quantity; // Assuming Price is the price per product and Quantity is how many of that product
-            });
+        // Calculate the total sum
+        $total = $order->orderItems->sum(function ($item) {
+            return $item->Price * $item->Quantity; // Assuming Price is the price per product and Quantity is how many of that product
+        });
     
-            // Return the total sum
-            return response()->json(['total' => $total]);
+        // Return the total as a value, not as a JsonResponse
+        return $total;
     }
+    
     //update order
     public function updateOrder(Request $request, $orderId)
     {

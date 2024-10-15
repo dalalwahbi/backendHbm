@@ -40,6 +40,8 @@ Route::get('email/verify/{id}/{hash}', [VerificationController::class, 'verify']
 Route::post('email/resend', [VerificationController::class, 'resend'])
     ->middleware(['auth'])
     ->name('verification.resend');
+//user update
+Route::middleware('auth:sanctum')->put('/user/update', [UserController::class, 'updateUserInfo']);
 
 //product controller
 Route::get('/products', [ProductController::class, 'allProducts']); // To get all products
@@ -59,6 +61,9 @@ Route::middleware('auth:sanctum')->post('/orders/create', [OrderController::clas
 // Route::post('/orders/create', [OrderController::class, 'createOrder']);
 
 Route::middleware('auth:sanctum')->get('/get-orders', [OrderController::class, 'getOrders']);
+Route::middleware('auth:sanctum')->get('/get-ordersAdmin', [OrderController::class, 'getOrdersAdmin']);
+
+
 Route::middleware('auth:sanctum')->get('/orders/{orderId}', [OrderController::class, 'getOrder']);
 
 // Route for fetching all users with the role 'supplier'

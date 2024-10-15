@@ -24,9 +24,6 @@ class UserController extends Controller
                 'phone' => 'nullable|string|max:20',
                 'address' => 'nullable|string|max:255',
             ]);
-    
-       
-    
             // Generate a custom ID
             $customId = $this->generateCustomId($validatedData['name']);
     
@@ -68,20 +65,16 @@ class UserController extends Controller
             ], 500);
         }
     }
-    
-    
 
-    
 
 // Function to generate custom ID
-    private function generateCustomId($name)
-    {
-    // Extract the first name and convert it to lowercase
-    $firstName = strtolower(explode(' ', $name)[0]); // Get the first name
-    $userId = 'hbm' . $firstName . Str::random(5); // Generate a random string of 5 characters
+private function generateCustomId()
+{
+    // Generate a random integer ID with 9 digits
+    $userId = mt_rand(100000000, 999999999); // Generate a 9-digit number
 
     return $userId;
-    }
+}
 
  // Login supplier or admin
     public function login(Request $request)
@@ -153,4 +146,40 @@ class UserController extends Controller
               return response()->json(['error' => 'Supplier not found'], 404);
           }
       }
+      //update user info
+      public function updateUserInfo(Request $request)
+      {
+          // Retrieve the authenticated user
+          $user = auth()->user();
+      
+          // Check if the user exists
+          if (!$user) {
+              return response()->json([
+                  'message' => 'User not found.'
+              ], 404);
+          }
+      
+          // Validate the incoming request
+          $request->validate([
+              'name' => 'required|string|max:255',
+              'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+              'phone' => 'nullable|string|max:20',
+              'address' => 'nullable|string|max:255',
+          ]);
+      
+          // Update user information
+          $user->name = $request->input('name');
+          $user->email = $request->input('email');
+          $user->phone = $request->input('phone');
+          $user->address = $request->input('address');
+          
+          $user->save();
+      
+          return response()->json([
+              'message' => 'User information updated successfully',
+              'data' => $user
+          ]);
+      }
+      
+
 }
